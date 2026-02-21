@@ -1,6 +1,6 @@
 # Catalog API - Laravel Product Management System
 
-![CI/CD Pipeline](https://github.com/yourusername/catalog-api/workflows/CI/CD%20Pipeline/badge.svg)
+![CI/CD Pipeline](https://github.com/andersonunsonst/catalog-api/workflows/CI/CD%20Pipeline/badge.svg)
 ![PHP Version](https://img.shields.io/badge/PHP-8.2+-blue.svg)
 ![Laravel Version](https://img.shields.io/badge/Laravel-12.x-red.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
