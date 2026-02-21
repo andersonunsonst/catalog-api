@@ -1,0 +1,91 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2024-01-15T10:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.8",
+  "resources": [
+    {
+      "_id": "wrk_catalog_api",
+      "_type": "workspace",
+      "name": "Catalog API",
+      "description": "Product Catalog Management System"
+    },
+    {
+      "_id": "env_base",
+      "_type": "environment",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:8000/api"
+      }
+    },
+    {
+      "_id": "req_create_product",
+      "_type": "request",
+      "name": "Create Product",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/products",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"sku\": \"LAPTOP-001\",\n  \"name\": \"Gaming Laptop\",\n  \"description\": \"High-performance gaming laptop with RTX 4080\",\n  \"price\": 1299.99,\n  \"category\": \"Electronics\",\n  \"status\": \"active\"\n}"
+      }
+    },
+    {
+      "_id": "req_get_products",
+      "_type": "request",
+      "name": "Get All Products",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/products?per_page=10&page=1"
+    },
+    {
+      "_id": "req_get_product",
+      "_type": "request",
+      "name": "Get Product by ID",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/products/1"
+    },
+    {
+      "_id": "req_update_product",
+      "_type": "request",
+      "name": "Update Product",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/products/1",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"name\": \"Updated Gaming Laptop\",\n  \"price\": 1399.99,\n  \"status\": \"active\"\n}"
+      }
+    },
+    {
+      "_id": "req_delete_product",
+      "_type": "request",
+      "name": "Delete Product",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/products/1"
+    },
+    {
+      "_id": "req_search_simple",
+      "_type": "request",
+      "name": "Simple Search",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/search/products?q=laptop"
+    },
+    {
+      "_id": "req_search_complex",
+      "_type": "request",
+      "name": "Complex Search",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/search/products?q=laptop&category=Electronics&status=active&min_price=500&max_price=2000&sort=price&order=asc"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+
+  app:
+    build: .
+    container_name: catalog_app
+    volumes:
+      - .:/var/www
+    depends_on:
+      - mysql
+      - redis
+      - elasticsearch
+    networks:
+      - catalog
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    depends_on:
+      - app
+    networks:
+      - catalog
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_DATABASE: catalog
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    networks:
+      - catalog
+
+  redis:
+    image: redis:alpine
+    networks:
+      - catalog
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.0
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    networks:
+      - catalog
+
+networks:
+  catalog:

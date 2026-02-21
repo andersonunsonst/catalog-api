@@ -1,0 +1,108 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: catalog_api_test
+          MYSQL_USER: catalog_user
+          MYSQL_PASSWORD: catalog_password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: false
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+        ports:
+          - 9200:9200
+        options: --health-cmd="curl -f http://localhost:9200/_cluster/health || exit 1" --health-interval=30s --health-timeout=10s --health-retries=5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, pdo, pdo_mysql, redis, zip
+        coverage: none
+
+    - name: Copy .env
+      run: |
+        cp .env.example .env
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+    - name: Install Dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+
+    - name: Generate key
+      run: php artisan key:generate
+
+    - name: Configure Application
+      run: |
+        echo "DB_CONNECTION=mysql" >> .env
+        echo "DB_HOST=127.0.0.1" >> .env
+        echo "DB_PORT=3306" >> .env
+        echo "DB_DATABASE=catalog_api_test" >> .env
+        echo "DB_USERNAME=catalog_user" >> .env
+        echo "DB_PASSWORD=catalog_password" >> .env
+        echo "REDIS_HOST=127.0.0.1" >> .env
+        echo "REDIS_PORT=6379" >> .env
+        echo "CACHE_STORE=redis" >> .env
+        echo "QUEUE_CONNECTION=redis" >> .env
+        echo "ELASTICSEARCH_HOST=127.0.0.1" >> .env
+        echo "ELASTICSEARCH_PORT=9200" >> .env
+
+    - name: Wait for services
+      run: |
+        sleep 10
+
+    - name: Run migrations
+      run: php artisan migrate --force
+
+    - name: Run Pint (Code Style)
+      run: ./vendor/bin/pint --test
+
+    - name: Run Tests
+      run: php artisan test
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring
+        coverage: none
+
+    - name: Install Dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+
+    - name: Run Pint
+      run: ./vendor/bin/pint --test
+
