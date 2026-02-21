@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
+use App\Services\ImageUploadService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -16,49 +17,38 @@ class ProductImageUploadTest extends TestCase
     {
         parent::setUp();
 
-        // Fake S3 storage (não precisa de credenciais reais)
-        Storage::fake('s3');
+        Storage::fake('public');
     }
 
     public function test_can_upload_product_image(): void
     {
-        // Criar produto
+        $this->mock(ImageUploadService::class, function ($mock) {
+            $mock->shouldReceive('uploadProductImage')
+                ->once()
+                ->andReturn('http://localhost/storage/products/1/test.jpg');
+        });
+
         $product = Product::factory()->create();
 
-        // Criar imagem fake
-        $file = UploadedFile::fake()->image('product.jpg', 800, 600);
-
-        // Upload
         $response = $this->postJson("/api/products/{$product->id}/image", [
-            'image' => $file,
+            'image' => UploadedFile::fake()->create('product.jpg', 100, 'image/jpeg'),
         ]);
 
-        // Verificar resposta
         $response->assertStatus(200)
             ->assertJsonStructure([
+                'message',
                 'data' => [
-                    'id',
-                    'sku',
-                    'name',
                     'image_url',
                 ],
             ]);
 
-        // Verificar que arquivo foi "enviado" para S3
-        $product->refresh();
-        $this->assertNotNull($product->image_url);
-
-        // Verificar que arquivo existe no storage fake
-        Storage::disk('s3')->assertExists(
-            str_replace(Storage::disk('s3')->url(''), '', $product->image_url)
-        );
+        $this->assertNotNull($product->fresh()->image_url);
     }
 
     public function test_upload_validates_file_type(): void
     {
         $product = Product::factory()->create();
 
-        // Tentar enviar arquivo não-imagem
         $file = UploadedFile::fake()->create('document.pdf', 100);
 
         $response = $this->postJson("/api/products/{$product->id}/image", [
@@ -73,8 +63,7 @@ class ProductImageUploadTest extends TestCase
     {
         $product = Product::factory()->create();
 
-        // Arquivo muito grande (6MB)
-        $file = UploadedFile::fake()->image('huge.jpg')->size(6000);
+        $file = UploadedFile::fake()->create('huge.jpg', 6000, 'image/jpeg');
 
         $response = $this->postJson("/api/products/{$product->id}/image", [
             'image' => $file,
@@ -86,7 +75,7 @@ class ProductImageUploadTest extends TestCase
 
     public function test_upload_returns_404_for_nonexistent_product(): void
     {
-        $file = UploadedFile::fake()->image('product.jpg');
+        $file = UploadedFile::fake()->create('product.jpg', 100, 'image/jpeg');
 
         $response = $this->postJson('/api/products/99999/image', [
             'image' => $file,

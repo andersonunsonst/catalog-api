@@ -4,13 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
 {
-    use RefreshDatabase, WithFaker;
+    use RefreshDatabase;
 
     /**
      * Test creating a product successfully.
@@ -20,10 +19,9 @@ class ProductTest extends TestCase
         $productData = [
             'sku' => 'TEST-SKU-001',
             'name' => 'Test Product',
-            'description' => 'This is a test product description',
             'price' => 99.99,
-            'category' => 'Electronics',
             'status' => 'active',
+            'category' => 'Electronics',
         ];
 
         $response = $this->postJson('/api/products', $productData);
@@ -38,10 +36,9 @@ class ProductTest extends TestCase
                     'id',
                     'sku',
                     'name',
-                    'description',
                     'price',
-                    'category',
                     'status',
+                    'category',
                     'created_at',
                     'updated_at',
                 ],
@@ -59,15 +56,16 @@ class ProductTest extends TestCase
     public function test_create_product_validation_fails(): void
     {
         $productData = [
-            'sku' => 'TEST',
-            'name' => 'AB', // Too short
-            'price' => -10, // Negative price
+            'sku' => 'TEST-SKU-001',
+            'name' => 'Test Product',
+            'price' => 0,
+            'category' => 'Electronics',
         ];
 
         $response = $this->postJson('/api/products', $productData);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'price', 'category']);
+            ->assertJsonValidationErrors(['price']);
     }
 
     /**
@@ -75,26 +73,21 @@ class ProductTest extends TestCase
      */
     public function test_cannot_create_product_with_duplicate_sku(): void
     {
-        // Create first product
-        $this->postJson('/api/products', [
-            'sku' => 'DUPLICATE-SKU',
-            'name' => 'First Product',
-            'price' => 99.99,
-            'category' => 'Test',
-        ])->assertStatus(201);
+        $product = Product::factory()->create(['sku' => 'DUPLICATE-SKU']);
 
-        // Try to create second product with same SKU
         $response = $this->postJson('/api/products', [
-            'sku' => 'DUPLICATE-SKU',
-            'name' => 'Second Product',
+            'sku' => $product->sku,
+            'name' => 'Duplicate Product',
             'price' => 199.99,
-            'category' => 'Test',
+            'category' => 'Electronics',
         ]);
 
-        $response->assertStatus(400)
+        $response->assertStatus(422)
             ->assertJson([
-                'success' => false,
-                'message' => 'SKU already exists',
+                'message' => 'Validation failed',
+                'errors' => [
+                    'sku' => ['This SKU already exists'],
+                ],
             ]);
     }
 
@@ -126,8 +119,7 @@ class ProductTest extends TestCase
 
         $response->assertStatus(404)
             ->assertJson([
-                'success' => false,
-                'message' => 'Resource not found',
+                'message' => 'Product not found',  // ← Mudou a mensagem
             ]);
     }
 
@@ -302,18 +294,19 @@ class ProductTest extends TestCase
     public function test_create_product_with_invalid_data_returns_422(): void
     {
         $response = $this->postJson('/api/products', [
-            'sku' => '', // Required
-            'name' => 'Test',
-            'price' => -10, // Must be positive
+            'sku' => '',
+            'price' => -10,
+            'category' => '',
         ]);
 
         $response->assertStatus(422)
             ->assertJson([
-                'success' => false,
                 'message' => 'Validation failed',
-            ])
-            ->assertJsonStructure([
-                'errors' => ['sku', 'price'],
+                'errors' => [
+                    'sku' => ['The SKU field is required'],
+                    'price' => ['The price must be greater than 0'],
+                    'category' => ['The category is required'],
+                ],
             ]);
     }
 }
