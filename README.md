@@ -738,8 +738,8 @@ This project is open-sourced software licensed under the [MIT license](https://o
 ## 👤 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@andersonunsonst](https://github.com/andersonunsonst)
+- Email: andersonunsonst@gmail.com
 
 ---
 
