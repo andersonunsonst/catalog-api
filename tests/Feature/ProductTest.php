@@ -44,7 +44,7 @@ class ProductTest extends TestCase
                     'status',
                     'created_at',
                     'updated_at',
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -113,7 +113,7 @@ class ProductTest extends TestCase
                     'id' => $product->id,
                     'sku' => $product->sku,
                     'name' => $product->name,
-                ]
+                ],
             ]);
     }
 
@@ -192,7 +192,7 @@ class ProductTest extends TestCase
                 'data' => [
                     'name' => 'Updated Product Name',
                     'price' => '149.99',
-                ]
+                ],
             ]);
 
         $this->assertDatabaseHas('products', [
@@ -212,7 +212,7 @@ class ProductTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJson([
-                'message' => 'Product deleted successfully'
+                'message' => 'Product deleted successfully',
             ]);
 
         $this->assertSoftDeleted('products', [

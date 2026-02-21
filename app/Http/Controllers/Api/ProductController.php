@@ -51,7 +51,7 @@ class ProductController extends Controller
     {
         $product = $this->productService->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             abort(404, 'Product not found');
         }
 
@@ -92,7 +92,7 @@ class ProductController extends Controller
     {
         $product = $this->productService->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             abort(404, 'Product not found');
         }
 

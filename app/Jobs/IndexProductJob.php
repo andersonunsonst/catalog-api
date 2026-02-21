@@ -22,7 +22,7 @@ class IndexProductJob implements ShouldQueue
             $elasticSearch->indexProduct($this->product);
             Log::info("Product {$this->product->id} indexed via queue");
         } catch (\Exception $e) {
-            Log::error("Failed to index product {$this->product->id}: " . $e->getMessage());
+            Log::error("Failed to index product {$this->product->id}: ".$e->getMessage());
             throw $e; // Retry automático
         }
     }

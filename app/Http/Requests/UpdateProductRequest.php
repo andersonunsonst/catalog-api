@@ -24,7 +24,7 @@ class UpdateProductRequest extends FormRequest
         $productId = $this->route('product');
 
         return [
-            'sku' => 'sometimes|string|max:100|unique:products,sku,' . $productId,
+            'sku' => 'sometimes|string|max:100|unique:products,sku,'.$productId,
             'name' => 'sometimes|string|min:3|max:255',
             'description' => 'nullable|string',
             'price' => 'sometimes|numeric|min:0.01',

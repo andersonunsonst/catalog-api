@@ -2,10 +2,10 @@
 
 namespace App\Observers;
 
-use App\Models\Product;
+use App\Jobs\DeleteProductIndexJob;
 use App\Jobs\IndexProductJob;
 use App\Jobs\UpdateProductIndexJob;
-use App\Jobs\DeleteProductIndexJob;
+use App\Models\Product;
 
 class ProductObserver
 {

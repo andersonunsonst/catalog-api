@@ -22,7 +22,7 @@ class UpdateProductIndexJob implements ShouldQueue
             $elasticSearch->updateProduct($this->product);
             Log::info("Product {$this->product->id} updated in index via queue");
         } catch (\Exception $e) {
-            Log::error("Failed to update product {$this->product->id}: " . $e->getMessage());
+            Log::error("Failed to update product {$this->product->id}: ".$e->getMessage());
             throw $e;
         }
     }

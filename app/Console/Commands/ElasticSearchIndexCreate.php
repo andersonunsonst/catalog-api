@@ -31,9 +31,11 @@ class ElasticSearchIndexCreate extends Command
         try {
             $elasticSearch->createIndex();
             $this->info('ElasticSearch index created successfully!');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('Failed to create index: ' . $e->getMessage());
+            $this->error('Failed to create index: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

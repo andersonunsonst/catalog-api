@@ -2,9 +2,9 @@
 
 namespace App\Jobs;
 
+use App\Services\ElasticSearchService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use App\Services\ElasticSearchService;
 use Illuminate\Support\Facades\Log;
 
 class DeleteProductIndexJob implements ShouldQueue
@@ -21,7 +21,7 @@ class DeleteProductIndexJob implements ShouldQueue
             $elasticSearch->deleteProduct($this->productId);
             Log::info("Product {$this->productId} deleted from index via queue");
         } catch (\Exception $e) {
-            Log::error("Failed to delete product {$this->productId}: " . $e->getMessage());
+            Log::error("Failed to delete product {$this->productId}: ".$e->getMessage());
             throw $e;
         }
     }

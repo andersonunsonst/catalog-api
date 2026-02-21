@@ -26,8 +26,8 @@ class UploadImageRequest extends FormRequest
             'image' => [
                 'required',
                 'image',
-                'mimes:' . implode(',', $allowedMimes),
-                'max:' . $maxSizeKB,
+                'mimes:'.implode(',', $allowedMimes),
+                'max:'.$maxSizeKB,
             ],
         ];
     }
@@ -41,7 +41,7 @@ class UploadImageRequest extends FormRequest
             'image.required' => 'Please select an image to upload.',
             'image.image' => 'The file must be an image.',
             'image.mimes' => 'Only JPEG, PNG, GIF and WebP images are allowed.',
-            'image.max' => 'The image size must not exceed ' . (config('upload.max_file_size') / 1024 / 1024) . 'MB.',
+            'image.max' => 'The image size must not exceed '.(config('upload.max_file_size') / 1024 / 1024).'MB.',
         ];
     }
 }

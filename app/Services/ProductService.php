@@ -77,7 +77,7 @@ class ProductService
     {
         $product = $this->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             throw new \InvalidArgumentException('Product not found');
         }
 
@@ -109,7 +109,7 @@ class ProductService
     {
         $product = $this->getProductById($id);
 
-        if (!$product) {
+        if (! $product) {
             throw new \InvalidArgumentException('Product not found');
         }
 
@@ -152,7 +152,7 @@ class ProductService
     private function getCacheKey(string $prefix, array $params, ?int $perPage = null): string
     {
         ksort($params);
-        $key = $prefix . '.' . md5(json_encode($params));
+        $key = $prefix.'.'.md5(json_encode($params));
 
         if ($perPage) {
             $key .= ".{$perPage}";
@@ -179,4 +179,3 @@ class ProductService
         $this->clearListCache();
     }
 }
-

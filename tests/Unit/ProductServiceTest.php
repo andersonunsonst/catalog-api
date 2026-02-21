@@ -14,7 +14,9 @@ class ProductServiceTest extends TestCase
     use RefreshDatabase;
 
     private ProductService $productService;
+
     private ProductRepository $repository;
+
     private ElasticSearchService $elasticSearch;
 
     protected function setUp(): void
@@ -140,4 +142,3 @@ class ProductServiceTest extends TestCase
         $this->assertNull($product);
     }
 }
-

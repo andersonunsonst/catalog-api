@@ -51,15 +51,15 @@ class ImageUploadService
      */
     private function validateFile(UploadedFile $file): void
     {
-        if (!in_array($file->getMimeType(), config('upload.allowed_mime_types'))) {
+        if (! in_array($file->getMimeType(), config('upload.allowed_mime_types'))) {
             throw new \InvalidArgumentException(
-                'Invalid file type. Allowed types: ' . implode(', ', config('upload.allowed_mime_types'))
+                'Invalid file type. Allowed types: '.implode(', ', config('upload.allowed_mime_types'))
             );
         }
 
         if ($file->getSize() > config('upload.max_file_size')) {
             throw new \InvalidArgumentException(
-                "File size exceeds " . config('upload.max_file_size') . " bytes limit"
+                'File size exceeds '.config('upload.max_file_size').' bytes limit'
             );
         }
     }
@@ -70,7 +70,8 @@ class ImageUploadService
     private function generateFilename(UploadedFile $file): string
     {
         $extension = $file->getClientOriginalExtension();
-        return Str::uuid() . ".{$extension}";
+
+        return Str::uuid().".{$extension}";
     }
 
     /**
@@ -88,6 +89,7 @@ class ImageUploadService
                 'url' => $imageUrl,
                 'error' => $e->getMessage(),
             ]);
+
             return false;
         }
     }
@@ -99,6 +101,7 @@ class ImageUploadService
     {
         $path = parse_url($url, PHP_URL_PATH);
         $path = ltrim($path, '/');
+
         return preg_replace('#^storage/#', '', $path);
     }
 }

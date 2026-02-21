@@ -33,9 +33,9 @@ class ProductRepository
 
         if (isset($filters['search'])) {
             $query->where(function ($q) use ($filters) {
-                $q->where('name', 'like', '%' . $filters['search'] . '%')
-                  ->orWhere('description', 'like', '%' . $filters['search'] . '%')
-                  ->orWhere('sku', 'like', '%' . $filters['search'] . '%');
+                $q->where('name', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('description', 'like', '%'.$filters['search'].'%')
+                    ->orWhere('sku', 'like', '%'.$filters['search'].'%');
             });
         }
 
@@ -76,6 +76,7 @@ class ProductRepository
     public function update(Product $product, array $data): Product
     {
         $product->update($data);
+
         return $product->fresh();
     }
 
@@ -95,4 +96,3 @@ class ProductRepository
         return Product::all();
     }
 }
-

@@ -31,9 +31,11 @@ class ElasticSearchReindex extends Command
         try {
             $elasticSearch->bulkIndexProducts();
             $this->info('All products reindexed successfully!');
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
-            $this->error('Failed to reindex: ' . $e->getMessage());
+            $this->error('Failed to reindex: '.$e->getMessage());
+
             return Command::FAILURE;
         }
     }

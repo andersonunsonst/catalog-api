@@ -22,7 +22,7 @@ class StoreProductRequest extends FormRequest
         throw new \Illuminate\Http\Exceptions\HttpResponseException(
             response()->json([
                 'message' => 'Validation failed',
-                'errors' => $validator->errors()
+                'errors' => $validator->errors(),
             ], 422)
         );
     }

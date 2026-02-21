@@ -21,14 +21,13 @@ class SearchController extends Controller
         try {
             $params = $request->validated();
             $results = $this->productService->searchProducts($params);
-            
+
             return response()->json($results, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Search failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 }
-

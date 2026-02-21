@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Product;
 use App\Services\ElasticSearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -135,10 +134,10 @@ class ProductSearchTest extends TestCase
         $params = '?q=laptop&category=Electronics';
 
         // First request
-        $this->getJson('/api/search/products' . $params);
+        $this->getJson('/api/search/products'.$params);
 
         // Second request should use cache
-        $response = $this->getJson('/api/search/products' . $params);
+        $response = $this->getJson('/api/search/products'.$params);
 
         $response->assertStatus(200);
     }
@@ -154,4 +153,3 @@ class ProductSearchTest extends TestCase
             ->assertJsonValidationErrors(['status']);
     }
 }
-
