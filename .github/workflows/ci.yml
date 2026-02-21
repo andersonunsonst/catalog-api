@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       mysql:
         image: mysql:8.0
@@ -39,24 +39,35 @@ jobs:
         options: --health-cmd="curl -f http://localhost:9200/_cluster/health || exit 1" --health-interval=30s --health-timeout=10s --health-retries=5
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
         extensions: mbstring, pdo, pdo_mysql, redis, zip
-        coverage: none
+        coverage: xdebug
+        tools: composer:v2
 
-    - name: Copy .env
-      run: |
-        cp .env.example .env
-        php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
 
     - name: Install Dependencies
-      run: composer install --prefer-dist --no-progress --no-interaction
+      run: composer install --prefer-dist --no-progress --no-interaction --no-suggest
 
-    - name: Generate key
+    - name: Copy .env
+      run: cp .env.example .env
+
+    - name: Generate Application Key
       run: php artisan key:generate
 
     - name: Configure Application
@@ -75,23 +86,34 @@ jobs:
         echo "ELASTICSEARCH_PORT=9200" >> .env
 
     - name: Wait for services
-      run: |
-        sleep 10
+      run: sleep 10
 
-    - name: Run migrations
+    - name: Run Migrations
       run: php artisan migrate --force
 
-    - name: Run Pint (Code Style)
+    - name: Create ElasticSearch Index
+      run: |
+        php artisan elasticsearch:create-index || true
+
+    - name: Run Code Style Check (Pint)
       run: ./vendor/bin/pint --test
 
     - name: Run Tests
-      run: php artisan test
+      run: php artisan test --coverage --min=80
+
+    - name: Upload Coverage Reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coverage/
 
   lint:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -100,9 +122,78 @@ jobs:
         extensions: mbstring
         coverage: none
 
+    - name: Cache Composer dependencies
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
+
     - name: Install Dependencies
       run: composer install --prefer-dist --no-progress --no-interaction
 
-    - name: Run Pint
+    - name: Run Pint (Code Style)
       run: ./vendor/bin/pint --test
+
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        coverage: none
+
+    - name: Install Dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+
+    - name: Security Check (Composer Audit)
+      run: composer audit
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test, lint, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/catalog-api:latest
+          ${{ secrets.DOCKER_USERNAME }}/catalog-api:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/catalog-api:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/catalog-api:buildcache,mode=max
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Deploy to Production
+      run: |
+        echo "🚀 Deployment would happen here"
+        echo "Example: SSH to server and pull new image"
+        # ssh user@server 'cd /app && docker-compose pull && docker-compose up -d'
+
+
 
